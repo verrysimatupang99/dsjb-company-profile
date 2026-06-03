@@ -1,8 +1,7 @@
 /* ============================================
-   DSJB Story Generator v2 — Canvas 1080×1920
-   Fix: overflow, emoji, newline, mobile, layout
+   DSJB Story Generator v3 — Canvas 1080×1920
+   Fully dynamic layout, overflow-safe, cross-browser
    ============================================ */
-
 (function () {
   "use strict";
 
@@ -12,145 +11,237 @@
   const ctx = canvas.getContext("2d");
 
   // ── State ───────────────────────────────────────────
-  let currentTheme = "green";
-  let currentTemplate = "company";
+  let theme = "green";
+  let template = "company";
   let logoImg = null;
-  let logoFailed = false;
+  let logoReady = false;
+  const FONT = "'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif";
 
   // ── Themes ──────────────────────────────────────────
   const THEMES = {
-    green: {
-      grad: ["#0a1f14", "#0e3a20", "#1a5c30", "#2f8f46"],
-      accent: "#67b846",
-      accentDark: "#2f8f46",
-      accentLight: "rgba(103,184,70,.12)",
-      text: "#ffffff",
-      muted: "#b8d4c4",
-      overlay: "rgba(0,0,0,.25)",
-    },
-    navy: {
-      grad: ["#020a14", "#06131c", "#0e2d45", "#145da0"],
-      accent: "#4da6e8",
-      accentDark: "#145da0",
-      accentLight: "rgba(77,166,232,.12)",
-      text: "#ffffff",
-      muted: "#b8c8d8",
-      overlay: "rgba(0,0,0,.3)",
-    },
-    gold: {
-      grad: ["#0e0a04", "#1a1008", "#3d2810", "#5c3a14"],
-      accent: "#d6ad63",
-      accentDark: "#b9631a",
-      accentLight: "rgba(214,173,99,.12)",
-      text: "#ffffff",
-      muted: "#d4c8b0",
-      overlay: "rgba(0,0,0,.3)",
-    },
-    dark: {
-      grad: ["#050808", "#0a0e12", "#141e28", "#1a2a38"],
-      accent: "#67b846",
-      accentDark: "#2f8f46",
-      accentLight: "rgba(103,184,70,.1)",
-      text: "#ffffff",
-      muted: "#8a9a9e",
-      overlay: "rgba(0,0,0,.35)",
-    },
+    green:  { bg: ["#061a0e","#0a2e18","#155c2e","#2f8f46"], accent: "#67b846", accentDark: "#2a7a3c", text: "#fff", muted: "#b0d4be", dim: "rgba(103,184,70,.08)" },
+    navy:   { bg: ["#020a14","#081828","#0e3050","#1a60a8"], accent: "#50b0f0", accentDark: "#145da0", text: "#fff", muted: "#a8c4dc", dim: "rgba(80,176,240,.08)" },
+    gold:   { bg: ["#0e0804","#1c1208","#3a2410","#6a4418"], accent: "#e0b860", accentDark: "#b08030", text: "#fff", muted: "#d8ccb0", dim: "rgba(224,184,96,.08)" },
+    dark:   { bg: ["#06080a","#0e1418","#18242c","#243840"], accent: "#67b846", accentDark: "#2a7a3c", text: "#fff", muted: "#889ca4", dim: "rgba(103,184,70,.06)" },
   };
 
-  // ── Load Logo (with fallback) ───────────────────────
+  // ── Load Logo ───────────────────────────────────────
   function loadLogo() {
     const img = new Image();
-    img.onload = () => { logoImg = img; render(); };
-    img.onerror = () => { logoFailed = true; render(); };
-    // Try WebP first, fallback to PNG
+    img.onload = () => { logoImg = img; logoReady = true; render(); };
+    img.onerror = () => { logoReady = true; render(); }; // still render, just without logo
     img.src = "assets/img/logo-dsjb-fullcolor-whitebg.webp";
   }
   loadLogo();
 
-  // ── SVG Icon Paths ──────────────────────────────────
-  const ICONS = {
-    phone: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z",
-    mail: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6",
-    map: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
-    leaf: "M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75",
-    share: "M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13",
-    check: "M20 6L9 17l-5-5",
+  // ── Core: Layout Tracker ────────────────────────────
+  // All rendering uses this to track Y position dynamically
+  const L = {
+    y: 0,
+    marginX: 100,
+    maxW() { return W - this.marginX * 2; },
+    reset(startY) { this.y = startY; },
+    add(px) { this.y += px; return this.y; },
+    remaining() { return H - this.y - 140; }, // 140px footer reserve
   };
 
-  function drawIcon(iconName, x, y, size, color) {
+  // ── Drawing Primitives ──────────────────────────────
+
+  function fillBg(th) {
+    const t = THEMES[th];
+    const g = ctx.createLinearGradient(0, 0, W * 0.35, H);
+    t.bg.forEach((c, i) => g.addColorStop(i / (t.bg.length - 1), c));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  function fillDecorations(th) {
+    const t = THEMES[th];
+    // Circles
     ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(size / 24, size / 24);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.fillStyle = "none";
-    const path = new Path2D(ICONS[iconName]);
-    ctx.stroke(path);
+    ctx.globalAlpha = 0.025;
+    ctx.fillStyle = t.accent;
+    ctx.beginPath(); ctx.arc(W * 0.82, H * 0.1, 340, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W * 0.12, H * 0.72, 240, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W * 0.5, H * 0.45, 480, 0, Math.PI * 2); ctx.fill();
+    // Diagonal lines
+    ctx.globalAlpha = 0.015;
+    ctx.strokeStyle = t.accent;
+    ctx.lineWidth = 1;
+    for (let i = -H; i < W + H; i += 80) {
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + H, H); ctx.stroke();
+    }
     ctx.restore();
   }
 
-  // ── Helper: Multi-line text with newline support ────
-  function drawMultilineText(text, x, y, maxWidth, lineHeight, font, color, align) {
-    ctx.font = font;
+  function fillAccentBars(th) {
+    const t = THEMES[th];
+    ctx.fillStyle = t.accent;
+    ctx.fillRect(0, 0, W, 5);
+    ctx.fillStyle = t.accentDark;
+    ctx.fillRect(0, H - 5, W, 5);
+  }
+
+  function drawBgFull(th) {
+    fillBg(th);
+    fillDecorations(th);
+    fillAccentBars(th);
+  }
+
+  function drawLogoScaled(size) {
+    if (!logoImg) return 0;
+    const lw = size;
+    const lh = (logoImg.height / logoImg.width) * lw;
+    ctx.save();
+    ctx.globalAlpha = 0.92;
+    ctx.drawImage(logoImg, W / 2 - lw / 2, L.y, lw, lh);
+    ctx.restore();
+    L.add(lh + 20);
+    return lh + 20;
+  }
+
+  function drawBadge(text, th) {
+    const t = THEMES[th];
+    ctx.font = `bold 21px ${FONT}`;
+    const tw = ctx.measureText(text).width;
+    const bw = tw + 50, bh = 42, bx = (W - bw) / 2;
+    ctx.save();
+    roundRect(bx, L.y, bw, bh, 21);
+    ctx.fillStyle = t.dim;
+    ctx.fill();
+    ctx.strokeStyle = t.accent;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = t.accent;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, W / 2, L.y + bh / 2);
+    ctx.restore();
+    L.add(bh + 24);
+  }
+
+  function drawDividerLine(th, width) {
+    const t = THEMES[th];
+    const w = width || 80;
+    ctx.fillStyle = t.accent;
+    roundRect(W / 2 - w / 2, L.y, w, 3, 1.5);
+    ctx.fill();
+    L.add(24);
+  }
+
+  function drawTextBlock(text, size, weight, color, align, maxLines) {
+    if (!text || !text.trim()) return;
+    maxLines = maxLines || 99;
+    const maxW = L.maxW();
+    const lineHeight = size * 1.35;
+    const fontStr = `${weight || ""} ${size}px ${FONT}`.trim();
+
+    ctx.font = fontStr;
     ctx.fillStyle = color;
-    ctx.textAlign = align || "left";
+    ctx.textAlign = align || "center";
     ctx.textBaseline = "top";
 
-    // Split by newlines first, then wrap each paragraph
     const paragraphs = text.split("\n");
-    let curY = y;
+    let lineCount = 0;
 
     for (const para of paragraphs) {
-      if (para.trim() === "") {
-        curY += lineHeight * 0.5; // Empty line = half spacing
-        continue;
-      }
-      const words = para.split(" ");
+      if (lineCount >= maxLines) break;
+      if (para.trim() === "") { L.add(lineHeight * 0.4); continue; }
+      const words = para.split(/\s+/);
       let line = "";
       for (const word of words) {
-        const test = line + word + " ";
-        if (ctx.measureText(test).width > maxWidth && line !== "") {
-          ctx.fillText(line.trim(), x, curY);
-          line = word + " ";
-          curY += lineHeight;
+        if (lineCount >= maxLines) break;
+        const test = line ? line + " " + word : word;
+        if (ctx.measureText(test).width > maxW && line) {
+          const x = align === "center" ? W / 2 : L.marginX;
+          ctx.fillText(line, x, L.y);
+          L.add(lineHeight);
+          lineCount++;
+          line = word;
         } else {
           line = test;
         }
       }
-      if (line.trim()) {
-        ctx.fillText(line.trim(), x, curY);
-        curY += lineHeight;
+      if (line && lineCount < maxLines) {
+        const x = align === "center" ? W / 2 : L.marginX;
+        ctx.fillText(line, x, L.y);
+        L.add(lineHeight);
+        lineCount++;
       }
     }
-    return curY;
   }
 
-  // ── Helper: Measure text height (for layout calc) ──
-  function measureTextHeight(text, maxWidth, lineHeight, font) {
-    ctx.font = font;
-    const paragraphs = text.split("\n");
-    let lines = 0;
-    for (const para of paragraphs) {
-      if (para.trim() === "") { lines += 0.5; continue; }
-      const words = para.split(" ");
-      let line = "";
-      for (const word of words) {
-        const test = line + word + " ";
-        if (ctx.measureText(test).width > maxWidth && line !== "") {
-          lines++;
-          line = word + " ";
-        } else {
-          line = test;
-        }
-      }
-      if (line.trim()) lines++;
+  function drawCTAButton(text, th, size) {
+    const t = THEMES[th];
+    const fs = size || 30;
+    ctx.font = `bold ${fs}px ${FONT}`;
+    const tw = ctx.measureText(text).width;
+    const bw = Math.max(tw + 80, 340);
+    const bh = fs * 2 + 16;
+    const bx = (W - bw) / 2;
+    const by = L.y;
+
+    ctx.save();
+    // Shadow
+    ctx.shadowColor = "rgba(0,0,0,.25)";
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 4;
+    // Button shape
+    roundRect(bx, by, bw, bh, bh / 2);
+    const btnGrad = ctx.createLinearGradient(bx, by, bx + bw, by + bh);
+    btnGrad.addColorStop(0, t.accent);
+    btnGrad.addColorStop(1, t.accentDark);
+    ctx.fillStyle = btnGrad;
+    ctx.fill();
+    ctx.restore();
+
+    // Text
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `bold ${fs}px ${FONT}`;
+    ctx.fillText(text, W / 2, by + bh / 2);
+    L.add(bh + 20);
+  }
+
+  function drawContactItems(th) {
+    const t = THEMES[th];
+    const items = [
+      ["0813-4841-4190", "Telp/WhatsApp"],
+      ["dsitujayabersama@gmail.com", "Email"],
+      ["Tanah Bumbu, Kalimantan Selatan", "Lokasi"],
+    ];
+    for (const [val, label] of items) {
+      ctx.font = `600 20px ${FONT}`;
+      ctx.fillStyle = t.accent;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText(label.toUpperCase(), L.marginX, L.y);
+      ctx.font = `22px ${FONT}`;
+      ctx.fillStyle = t.muted;
+      ctx.fillText(val, L.marginX + 180, L.y);
+      L.add(40);
     }
-    return lines * lineHeight;
   }
 
-  // ── Helper: Rounded rectangle ───────────────────────
+  function drawFooter(th) {
+    const t = THEMES[th];
+    // Fade
+    const fade = ctx.createLinearGradient(0, H - 120, 0, H);
+    fade.addColorStop(0, "rgba(0,0,0,0)");
+    fade.addColorStop(1, "rgba(0,0,0,.35)");
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, H - 120, W, 120);
+    // Website
+    ctx.font = `500 18px ${FONT}`;
+    ctx.fillStyle = t.muted;
+    ctx.globalAlpha = 0.5;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("dsjb-company-profile  ·  PT DSITU JAYA BERSAMA", W / 2, H - 28);
+    ctx.globalAlpha = 1;
+  }
+
   function roundRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -165,336 +256,222 @@
     ctx.closePath();
   }
 
-  // ── Helper: Clamp font size if text too long ────────
-  function clampFontSize(text, maxWidth, maxLines, startSize, minSize, fontSuffix) {
-    for (let size = startSize; size >= minSize; size -= 2) {
-      const height = measureTextHeight(text, maxWidth, size * 1.25, `bold ${size}px ${fontSuffix}`);
-      if (height <= size * 1.25 * maxLines) return size;
+  // ── Auto font size: find largest that fits maxLines ──
+  function autoSize(text, maxSize, minSize, maxLines) {
+    const maxW = L.maxW();
+    for (let s = maxSize; s >= minSize; s -= 2) {
+      ctx.font = `bold ${s}px ${FONT}`;
+      // Count wrapped lines
+      let lines = 0;
+      for (const para of text.split("\n")) {
+        if (!para.trim()) { lines += 0.4; continue; }
+        let line = "";
+        for (const word of para.split(/\s+/)) {
+          const test = line ? line + " " + word : word;
+          if (ctx.measureText(test).width > maxW && line) { lines++; line = word; }
+          else { line = test; }
+        }
+        if (line) lines++;
+      }
+      if (lines <= maxLines) return s;
     }
     return minSize;
-  }
-
-  // ── Draw Background ─────────────────────────────────
-  function drawBg(theme) {
-    const t = THEMES[theme];
-    // Gradient
-    const grad = ctx.createLinearGradient(0, 0, W * 0.3, H);
-    t.grad.forEach((c, i) => grad.addColorStop(i / (t.grad.length - 1), c));
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-
-    // Decorative geometric shapes
-    ctx.globalAlpha = 0.03;
-    ctx.fillStyle = t.accent;
-    ctx.beginPath(); ctx.arc(W * 0.85, H * 0.12, 320, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(W * 0.08, H * 0.78, 220, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(W * 0.5, H * 0.5, 500, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // Top accent bar
-    ctx.fillStyle = t.accent;
-    ctx.fillRect(0, 0, W, 6);
-
-    // Bottom accent bar
-    ctx.fillStyle = t.accentDark;
-    ctx.fillRect(0, H - 6, W, 6);
-  }
-
-  // ── Draw Logo ───────────────────────────────────────
-  function drawLogo(y, size) {
-    size = size || 180;
-    if (logoImg) {
-      const lw = size;
-      const lh = (logoImg.height / logoImg.width) * lw;
-      ctx.globalAlpha = 0.95;
-      ctx.drawImage(logoImg, W / 2 - lw / 2, y, lw, lh);
-      ctx.globalAlpha = 1;
-      return y + lh + 16;
-    }
-    // Fallback: text logo
-    if (logoFailed) {
-      ctx.font = "bold 28px 'Segoe UI', sans-serif";
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillText("PT DSITU JAYA BERSAMA", W / 2, y);
-      return y + 40;
-    }
-    return y;
-  }
-
-  // ── Draw Eyebrow Badge ──────────────────────────────
-  function drawBadge(text, y, theme) {
-    const t = THEMES[theme];
-    ctx.font = "bold 22px 'Segoe UI', sans-serif";
-    const tw = ctx.measureText(text).width;
-    const bw = tw + 48, bh = 44, bx = (W - bw) / 2;
-    roundRect(bx, y, bw, bh, 22);
-    ctx.fillStyle = t.accentLight;
-    ctx.fill();
-    ctx.strokeStyle = t.accent;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.fillStyle = t.accent;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, W / 2, y + bh / 2);
-    return y + bh + 28;
-  }
-
-  // ── Draw Divider ────────────────────────────────────
-  function drawDivider(y, theme, width) {
-    const t = THEMES[theme];
-    const w = width || 80;
-    ctx.fillStyle = t.accent;
-    roundRect(W / 2 - w / 2, y, w, 3, 1.5);
-    ctx.fill();
-    return y + 24;
-  }
-
-  // ── Draw CTA Button ─────────────────────────────────
-  function drawCTAButton(text, y, theme, size) {
-    const t = THEMES[theme];
-    const fontSize = size || 30;
-    ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
-    const tw = ctx.measureText(text).width;
-    const bw = Math.max(tw + 80, 360);
-    const bh = fontSize + 40;
-    const bx = (W - bw) / 2;
-    roundRect(bx, y, bw, bh, bh / 2);
-    ctx.fillStyle = t.accent;
-    ctx.fill();
-    // Subtle inner shadow
-    ctx.shadowColor = "rgba(0,0,0,.2)";
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 2;
-    ctx.fill();
-    ctx.shadowColor = "transparent";
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, W / 2, y + bh / 2);
-    return y + bh + 24;
-  }
-
-  // ── Draw Contact Footer ─────────────────────────────
-  function drawContactBar(y, theme) {
-    const t = THEMES[theme];
-    const items = [
-      { icon: "phone", text: "0813-4841-4190" },
-      { icon: "mail", text: "dsitujayabersama@gmail.com" },
-      { icon: "map", text: "Tanah Bumbu, Kalimantan Selatan" },
-    ];
-    const lineH = 44;
-    const startX = W / 2 - 200;
-    for (const item of items) {
-      drawIcon(item.icon, startX - 30, y + 4, 20, t.accent);
-      ctx.font = "22px 'Segoe UI', sans-serif";
-      ctx.fillStyle = t.muted;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-      ctx.fillText(item.text, startX + 8, y);
-      y += lineH;
-    }
-    return y;
-  }
-
-  // ── Draw Bottom Footer ──────────────────────────────
-  function drawFooter(theme) {
-    const t = THEMES[theme];
-    // Fade
-    const fade = ctx.createLinearGradient(0, H - 160, 0, H);
-    fade.addColorStop(0, "transparent");
-    fade.addColorStop(1, t.overlay);
-    ctx.fillStyle = fade;
-    ctx.fillRect(0, H - 160, W, 160);
-    // Website
-    ctx.font = "20px 'Segoe UI', sans-serif";
-    ctx.fillStyle = t.muted;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.globalAlpha = 0.6;
-    ctx.fillText("verrysimatupang99.github.io/dsjb-company-profile", W / 2, H - 30);
-    ctx.globalAlpha = 1;
   }
 
   // ═══════════════════════════════════════════════════
   //  TEMPLATES
   // ═══════════════════════════════════════════════════
 
-  function renderCompany(theme, data) {
-    const t = THEMES[theme];
-    const pad = 100;
-    const maxW = W - pad * 2;
-    drawBg(theme);
-
-    let y = 140;
-    y = drawLogo(y, 160);
-    y += 40;
+  function renderCompany(th, d) {
+    const t = THEMES[th];
+    drawBgFull(th);
+    L.reset(130);
+    drawLogoScaled(160);
+    L.add(30);
 
     // Tagline
-    ctx.font = "bold 26px 'Segoe UI', sans-serif";
+    ctx.font = `bold 24px ${FONT}`;
     ctx.fillStyle = t.accent;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.letterSpacing = "2px";
-    ctx.fillText("THE RIGHT PARTNER, THE GREAT STEP.", W / 2, y);
-    ctx.letterSpacing = "0px";
-    y += 50;
-    y = drawDivider(y, theme, 120);
-    y += 20;
-
-    // Title — auto font size
-    const titleSize = clampFontSize(data.title, maxW, 3, 56, 32, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.title, W / 2, y, maxW, titleSize * 1.3, `bold ${titleSize}px 'Segoe UI', sans-serif`, t.text, "center");
-    y += 16;
-
-    // Subtitle
-    const subSize = clampFontSize(data.subtitle, maxW, 2, 28, 20, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.subtitle, W / 2, y, maxW, subSize * 1.4, `${subSize}px 'Segoe UI', sans-serif`, t.muted, "center");
-    y += 30;
-
-    // Body
-    const bodySize = clampFontSize(data.body, maxW, 6, 26, 18, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.body, W / 2, y, maxW, bodySize * 1.5, `${bodySize}px 'Segoe UI', sans-serif`, t.muted, "center");
-    y += 50;
-
-    drawCTAButton(data.cta, y, theme);
-
-    drawFooter(theme);
-  }
-
-  function renderService(theme, data) {
-    const t = THEMES[theme];
-    const pad = 100;
-    const maxW = W - pad * 2;
-    drawBg(theme);
-
-    let y = 100;
-    y = drawLogo(y, 140);
-    y += 30;
-
-    y = drawBadge("LAYANAN KAMI", y, theme);
-
-    // Service icon
-    const iconSize = 100;
-    const ix = W / 2 - iconSize / 2;
-    roundRect(ix, y, iconSize, iconSize, 20);
-    ctx.fillStyle = t.accentLight;
-    ctx.fill();
-    ctx.strokeStyle = t.accent;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    drawIcon("leaf", ix + 25, y + 25, 50, t.accent);
-    y += iconSize + 40;
+    ctx.fillText("THE RIGHT PARTNER, THE GREAT STEP.", W / 2, L.y);
+    L.add(44);
+    drawDividerLine(th, 120);
+    L.add(10);
 
     // Title
-    const titleSize = clampFontSize(data.title, maxW, 3, 52, 28, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.title, W / 2, y, maxW, titleSize * 1.3, `bold ${titleSize}px 'Segoe UI', sans-serif`, t.text, "center");
-    y += 12;
+    const ts = autoSize(d.title, 58, 30, 3);
+    drawTextBlock(d.title, ts, "bold", t.text, "center", 3);
+    L.add(12);
 
     // Subtitle
-    const subSize = clampFontSize(data.subtitle, maxW, 2, 26, 18, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.subtitle, W / 2, y, maxW, subSize * 1.4, `${subSize}px 'Segoe UI', sans-serif`, t.accent, "center");
-    y += 24;
+    const ss = autoSize(d.subtitle, 28, 18, 2);
+    drawTextBlock(d.subtitle, ss, "500", t.muted, "center", 2);
+    L.add(24);
 
     // Body
-    const bodySize = clampFontSize(data.body, maxW, 5, 26, 18, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.body, W / 2, y, maxW, bodySize * 1.5, `${bodySize}px 'Segoe UI', sans-serif`, t.muted, "center");
-    y += 40;
+    const bs = autoSize(d.body, 26, 16, 6);
+    drawTextBlock(d.body, bs, "normal", t.muted, "center", 6);
+    L.add(40);
 
-    drawCTAButton(data.cta, y, theme);
-    drawFooter(theme);
+    if (L.remaining() > 80) drawCTAButton(d.cta, th);
+    drawFooter(th);
   }
 
-  function renderQuote(theme, data) {
-    const t = THEMES[theme];
-    const pad = 120;
-    const maxW = W - pad * 2;
-    drawBg(theme);
+  function renderService(th, d) {
+    const t = THEMES[th];
+    drawBgFull(th);
+    L.reset(90);
+    drawLogoScaled(130);
+    L.add(20);
+    drawBadge("LAYANAN KAMI", th);
 
-    let y = 180;
-    y = drawLogo(y, 140);
-    y += 60;
+    // Icon box
+    const boxSize = 100;
+    const bx = W / 2 - boxSize / 2;
+    roundRect(bx, L.y, boxSize, boxSize, 18);
+    ctx.fillStyle = t.dim;
+    ctx.fill();
+    ctx.strokeStyle = t.accent;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    // Leaf shape inside
+    ctx.save();
+    ctx.translate(W / 2, L.y + boxSize / 2);
+    ctx.fillStyle = t.accent;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 28, 38, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = t.accent;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 28);
+    ctx.quadraticCurveTo(0, -10, -16, -28);
+    ctx.moveTo(0, 28);
+    ctx.quadraticCurveTo(4, 0, 20, -20);
+    ctx.stroke();
+    ctx.restore();
+    L.add(boxSize + 36);
+
+    // Title
+    const ts = autoSize(d.title, 52, 26, 3);
+    drawTextBlock(d.title, ts, "bold", t.text, "center", 3);
+    L.add(8);
+
+    // Subtitle
+    const ss = autoSize(d.subtitle, 26, 16, 2);
+    drawTextBlock(d.subtitle, ss, "600", t.accent, "center", 2);
+    L.add(20);
+
+    // Body
+    const bs = autoSize(d.body, 26, 16, 5);
+    drawTextBlock(d.body, bs, "normal", t.muted, "center", 5);
+    L.add(36);
+
+    if (L.remaining() > 80) drawCTAButton(d.cta, th);
+    drawFooter(th);
+  }
+
+  function renderQuote(th, d) {
+    const t = THEMES[th];
+    drawBgFull(th);
+    L.reset(160);
+    drawLogoScaled(130);
+    L.add(50);
 
     // Big quote mark
-    ctx.font = "180px Georgia, serif";
+    ctx.font = `180px Georgia, 'Times New Roman', serif`;
     ctx.fillStyle = t.accent;
-    ctx.globalAlpha = 0.15;
+    ctx.globalAlpha = 0.12;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText("\u201C", W / 2, y - 30);
+    ctx.fillText("\u201C", W / 2, L.y - 20);
     ctx.globalAlpha = 1;
-    y += 30;
+    L.add(60);
 
-    // Quote body — italic, auto size
-    const bodySize = clampFontSize(data.body, maxW, 6, 40, 24, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.body, W / 2, y, maxW, bodySize * 1.5, `italic ${bodySize}px 'Segoe UI', sans-serif`, t.text, "center");
-    y += 40;
+    // Quote body
+    const bs = autoSize(d.body, 42, 22, 5);
+    drawTextBlock(d.body, bs, "normal", t.text, "center", 5);
+    // Override font to italic
+    ctx.font = `italic ${bs}px ${FONT}`;
+    ctx.fillStyle = t.text;
+    ctx.textAlign = "center";
+    L.add(30);
 
-    y = drawDivider(y, theme, 60);
-    y += 16;
+    drawDividerLine(th, 60);
+    L.add(6);
 
-    // Author
-    ctx.font = "bold 28px 'Segoe UI', sans-serif";
+    // Author name
+    ctx.font = `bold 28px ${FONT}`;
     ctx.fillStyle = t.accent;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText(data.title, W / 2, y);
-    y += 40;
+    ctx.fillText(d.title, W / 2, L.y);
+    L.add(38);
 
-    ctx.font = "22px 'Segoe UI', sans-serif";
+    // Author role
+    ctx.font = `22px ${FONT}`;
     ctx.fillStyle = t.muted;
-    ctx.fillText(data.subtitle, W / 2, y);
-    y += 50;
+    ctx.fillText(d.subtitle, W / 2, L.y);
+    L.add(40);
 
-    drawCTAButton(data.cta, y, theme);
-    drawFooter(theme);
+    if (L.remaining() > 80) drawCTAButton(d.cta, th);
+    drawFooter(th);
   }
 
-  function renderCTA(theme, data) {
-    const t = THEMES[theme];
-    const pad = 100;
-    const maxW = W - pad * 2;
-    drawBg(theme);
+  function renderCTA(th, d) {
+    const t = THEMES[th];
+    drawBgFull(th);
+    L.reset(170);
+    drawLogoScaled(150);
+    L.add(40);
 
-    let y = 200;
-    y = drawLogo(y, 160);
-    y += 60;
-
-    // Big title
-    const titleSize = clampFontSize(data.title, maxW, 3, 60, 32, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.title, W / 2, y, maxW, titleSize * 1.3, `bold ${titleSize}px 'Segoe UI', sans-serif`, t.text, "center");
-    y += 20;
-
-    y = drawDivider(y, theme, 100);
-    y += 20;
+    // Title
+    const ts = autoSize(d.title, 62, 30, 3);
+    drawTextBlock(d.title, ts, "bold", t.text, "center", 3);
+    L.add(16);
+    drawDividerLine(th, 100);
 
     // Subtitle
-    const subSize = clampFontSize(data.subtitle, maxW, 3, 28, 20, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.subtitle, W / 2, y, maxW, subSize * 1.45, `${subSize}px 'Segoe UI', sans-serif`, t.muted, "center");
-    y += 16;
+    const ss = autoSize(d.subtitle, 28, 18, 3);
+    drawTextBlock(d.subtitle, ss, "500", t.muted, "center", 3);
+    L.add(12);
 
     // Body
-    const bodySize = clampFontSize(data.body, maxW, 4, 26, 18, "'Segoe UI', sans-serif");
-    y = drawMultilineText(data.body, W / 2, y, maxW, bodySize * 1.5, `${bodySize}px 'Segoe UI', sans-serif`, t.muted, "center");
-    y += 50;
+    const bs = autoSize(d.body, 26, 16, 4);
+    drawTextBlock(d.body, bs, "normal", t.muted, "center", 4);
+    L.add(40);
 
-    drawCTAButton(data.cta, y, theme, 34);
-    y += 90;
+    if (L.remaining() > 160) {
+      drawCTAButton(d.cta, th, 34);
+      L.add(20);
+    }
 
-    // Contact info with icons
-    drawContactBar(y, theme);
-
-    drawFooter(theme);
+    if (L.remaining() > 140) drawContactItems(th);
+    drawFooter(th);
   }
 
-  // ── Templates & Defaults ────────────────────────────
+  // ── Render Dispatcher ───────────────────────────────
   const TEMPLATES = { company: renderCompany, service: renderService, quote: renderQuote, cta: renderCTA };
 
-  const DEFAULT_DATA = {
+  function getData() {
+    return {
+      title:   document.getElementById("storyTitle").value || "PT DSITU JAYA BERSAMA",
+      subtitle:document.getElementById("storySubtitle").value || "The Right Partner, The Great Step.",
+      body:    document.getElementById("storyBody").value || "",
+      cta:     document.getElementById("storyCTA").value || "Hubungi Kami",
+    };
+  }
+
+  function render() {
+    const fn = TEMPLATES[template];
+    if (fn) fn(theme, getData());
+  }
+
+  // ── Defaults per template ───────────────────────────
+  const DEFAULTS = {
     company: {
       title: "PT DSITU JAYA BERSAMA",
       subtitle: "The Right Partner, The Great Step.",
@@ -521,84 +498,47 @@
     },
   };
 
-  // Template label hints
   const LABELS = {
-    company: { title: "Nama Perusahaan", subtitle: "Tagline", body: "Deskripsi Layanan", cta: "Tombol Ajakan" },
-    service: { title: "Nama Layanan/Divisi", subtitle: "Kategori", body: "Deskripsi Layanan", cta: "Tombol Ajakan" },
-    quote: { title: "Nama Pengirim", subtitle: "Jabatan/Perusahaan", body: "Isi Kutipan", cta: "Tombol Ajakan" },
-    cta: { title: "Judul Penawaran", subtitle: "Subjudul", body: "Deskripsi", cta: "Teks Tombol" },
+    company: { t: "Nama Perusahaan", s: "Tagline", b: "Deskripsi Layanan", c: "Tombol Ajakan" },
+    service: { t: "Nama Layanan/Divisi", s: "Kategori", b: "Deskripsi Layanan", c: "Tombol Ajakan" },
+    quote:   { t: "Nama Pengirim", s: "Jabatan/Perusahaan", b: "Isi Kutipan", c: "Tombol Ajakan" },
+    cta:     { t: "Judul Penawaran", s: "Subjudul", b: "Deskripsi", c: "Teks Tombol" },
   };
 
-  // ── Get Data from Inputs ────────────────────────────
-  function getData() {
-    return {
-      title: document.getElementById("storyTitle").value,
-      subtitle: document.getElementById("storySubtitle").value,
-      body: document.getElementById("storyBody").value,
-      cta: document.getElementById("storyCTA").value,
-    };
-  }
-
-  function render() {
-    const fn = TEMPLATES[currentTemplate];
-    if (fn) fn(currentTheme, getData());
-  }
-
-  // ── Character Counter ───────────────────────────────
-  function updateCounters() {
-    const fields = [
-      { id: "storyTitle", counterId: "countTitle", max: 60 },
-      { id: "storySubtitle", counterId: "countSubtitle", max: 80 },
-      { id: "storyBody", counterId: "countBody", max: 200 },
-      { id: "storyCTA", counterId: "countCTA", max: 30 },
-    ];
-    for (const f of fields) {
-      const el = document.getElementById(f.id);
-      const counter = document.getElementById(f.counterId);
-      if (el && counter) {
-        const len = el.value.length;
-        counter.textContent = `${len}/${f.max}`;
-        counter.style.color = len > f.max * 0.9 ? "#f87171" : "";
-      }
-    }
-  }
-
-  // ── Update Labels ───────────────────────────────────
   function updateLabels() {
-    const labels = LABELS[currentTemplate];
-    if (!labels) return;
-    document.getElementById("labelTitle").textContent = labels.title;
-    document.getElementById("labelSubtitle").textContent = labels.subtitle;
-    document.getElementById("labelBody").textContent = labels.body;
-    document.getElementById("labelCTA").textContent = labels.cta;
+    const l = LABELS[template];
+    if (!l) return;
+    document.getElementById("labelTitle").textContent = l.t;
+    document.getElementById("labelSubtitle").textContent = l.s;
+    document.getElementById("labelBody").textContent = l.b;
+    document.getElementById("labelCTA").textContent = l.c;
   }
 
-  // ── Download (mobile-safe) ──────────────────────────
-  function downloadStory() {
-    // Create high-quality blob
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `dsjb-story-${currentTemplate}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }, "image/png", 1.0);
+  function updateCounters() {
+    [{ id: "storyTitle", c: "countTitle", max: 60 },
+     { id: "storySubtitle", c: "countSubtitle", max: 80 },
+     { id: "storyBody", c: "countBody", max: 200 },
+     { id: "storyCTA", c: "countCTA", max: 30 }].forEach(({ id, c, max }) => {
+      const el = document.getElementById(id);
+      const ct = document.getElementById(c);
+      if (el && ct) {
+        const n = el.value.length;
+        ct.textContent = n + "/" + max;
+        ct.style.color = n > max * 0.9 ? "#f87171" : "";
+      }
+    });
   }
 
-  // ── Event Listeners ─────────────────────────────────
+  // ── Event Wiring ────────────────────────────────────
 
-  // Template buttons
+  // Template selector
   document.getElementById("templateSelector").addEventListener("click", (e) => {
     const btn = e.target.closest(".template-btn");
     if (!btn) return;
-    document.querySelectorAll(".template-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".template-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    currentTemplate = btn.dataset.template;
-    const def = DEFAULT_DATA[currentTemplate];
+    template = btn.dataset.template;
+    const def = DEFAULTS[template];
     if (def) {
       document.getElementById("storyTitle").value = def.title;
       document.getElementById("storySubtitle").value = def.subtitle;
@@ -612,23 +552,22 @@
 
   // Color swatches
   document.getElementById("colorRow").addEventListener("click", (e) => {
-    const swatch = e.target.closest(".color-swatch");
-    if (!swatch) return;
-    document.querySelectorAll(".color-swatch").forEach((s) => s.classList.remove("active"));
-    swatch.classList.add("active");
-    currentTheme = swatch.dataset.theme;
+    const sw = e.target.closest(".color-swatch");
+    if (!sw) return;
+    document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("active"));
+    sw.classList.add("active");
+    theme = sw.dataset.theme;
     render();
   });
 
-  // Text inputs — live update + counter
-  ["storyTitle", "storySubtitle", "storyBody", "storyCTA"].forEach((id) => {
-    const el = document.getElementById(id);
-    el.addEventListener("input", () => { render(); updateCounters(); });
+  // Live input
+  ["storyTitle", "storySubtitle", "storyBody", "storyCTA"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => { render(); updateCounters(); });
   });
 
-  // Reset button
+  // Reset
   document.getElementById("btnReset").addEventListener("click", () => {
-    const def = DEFAULT_DATA[currentTemplate];
+    const def = DEFAULTS[template];
     if (def) {
       document.getElementById("storyTitle").value = def.title;
       document.getElementById("storySubtitle").value = def.subtitle;
@@ -640,26 +579,34 @@
   });
 
   // Download
-  document.getElementById("btnDownload").addEventListener("click", downloadStory);
-
-  // WhatsApp share
-  document.getElementById("btnWhatsApp").addEventListener("click", () => {
-    const data = getData();
-    const text = [
-      data.title,
-      data.subtitle,
-      "",
-      data.body.replace(/\n/g, "\n"),
-      "",
-      "Hubungi: 0813-4841-4190",
-      "Email: dsitujayabersama@gmail.com",
-      "",
-      "https://verrysimatupang99.github.io/dsjb-company-profile/",
-    ].join("\n");
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  document.getElementById("btnDownload").addEventListener("click", () => {
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "dsjb-story-" + template + ".png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }, "image/png", 1.0);
   });
 
-  // Initial state
+  // WhatsApp
+  document.getElementById("btnWhatsApp").addEventListener("click", () => {
+    const d = getData();
+    const msg = [
+      d.title, d.subtitle, "",
+      d.body, "",
+      "Hubungi: 0813-4841-4190",
+      "Email: dsitujayabersama@gmail.com", "",
+      "https://verrysimatupang99.github.io/dsjb-company-profile/",
+    ].join("\n");
+    window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+  });
+
+  // Init
   updateLabels();
   updateCounters();
   render();
