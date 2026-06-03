@@ -9,7 +9,7 @@
   <meta name="author" content="PT DSITU JAYA BERSAMA">
   <meta property="og:title" content="PT DSITU JAYA BERSAMA | General Contractor & Integrated Plantation Services">
   <meta property="og:description" content="Partner strategis untuk kebutuhan agro, perkebunan, konstruksi pendukung, dan layanan operasional lapangan.">
-  <meta property="og:image" content="https://verrysimatupang99.github.io/dsjb-company-profile/assets/img/cp-umum-logo-resmi.png">
+  <meta property="og:image" content="https://verrysimatupang99.github.io/dsjb-company-profile/assets/img/cp-umum-logo-resmi.webp">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://verrysimatupang99.github.io/dsjb-company-profile/">
   <meta name="twitter:card" content="summary_large_image">
@@ -17,6 +17,12 @@
   <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/logo-dsjb-fullcolor-whitebg.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2f8f46">
+  <script defer data-domain="verrysimatupang99.github.io/dsjb-company-profile" src="https://plausible.io/js/script.tagged-events.js"></script>
+  <link rel="preload" href="assets/css/styles.css" as="style">
+  <link rel="preload" href="assets/img/hero-cp-revisi.webp" as="image">
+  <link rel="preload" href="assets/js/main.js" as="script">
 </head>
 <body>
   <a href="#main-content" class="skip-link">Langsung ke konten utama</a>
@@ -222,7 +228,7 @@
   "@type": "Organization",
   "name": "PT DSITU JAYA BERSAMA",
   "url": "https://verrysimatupang99.github.io/dsjb-company-profile/",
-  "logo": "https://verrysimatupang99.github.io/dsjb-company-profile/assets/img/logo-dsjb-fullcolor-whitebg.png",
+  "logo": "https://verrysimatupang99.github.io/dsjb-company-profile/assets/img/logo-dsjb-fullcolor-whitebg.webp",
   "description": "Perusahaan general contractor dan integrated plantation services di Kalimantan Selatan.",
   "address": {
     "@type": "PostalAddress",
@@ -241,5 +247,10 @@
 }
 </script>
 
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/dsjb-company-profile/sw.js").catch(() => {});
+    }
+  </script>
 </body>
 </html>

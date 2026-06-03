@@ -1,0 +1,25 @@
+{
+  "name": "PT DSITU JAYA BERSAMA",
+  "short_name": "DSJB",
+  "description": "General Contractor & Integrated Plantation Services",
+  "start_url": "/dsjb-company-profile/",
+  "scope": "/dsjb-company-profile/",
+  "display": "standalone",
+  "background_color": "#06131c",
+  "theme_color": "#2f8f46",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "assets/img/logo-dsjb-fullcolor-whitebg-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/img/logo-dsjb-fullcolor-whitebg-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
