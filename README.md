@@ -1,47 +1,43 @@
-# PT DSITU JAYA BERSAMA - Company Profile Website
+# PT DSITU JAYA BERSAMA — Company Profile
 
-Website company profile resmi PT DSITU JAYA BERSAMA, perusahaan yang bergerak di berbagai bidang usaha termasuk perkebunan, rental alat berat, agrokimia, konstruksi, dan hortikultura.
+Website company profile PT DSITU JAYA BERSAMA, perusahaan general contractor dan integrated plantation services di Kalimantan Selatan.
 
 **Live:** https://verrysimatupang99.github.io/dsjb-company-profile/
 
-## Halaman
-
-- **Beranda** — Landing page utama dengan hero section dan ringkasan layanan
-- **Tentang** — Profil perusahaan, visi & misi
-- **Layanan** — Daftar 5 divisi usaha:
-  - Divisi Pengembangan Perkebunan
-  - Divisi Equipment Rental
-  - Divisi Pupuk & Agrokimia
-  - Divisi Konstruksi Bangunan
-  - Divisi Penangkaran Hortikultura
-- **Portofolio** — Proyek-proyek yang telah dikerjakan
-- **Kontak** — Formulir kontak dan informasi hubungi kami
-
-## Teknologi
-
-- HTML5
-- CSS3 (Custom Properties, Flexbox, Grid)
-- Vanilla JavaScript
-- No frameworks / build tools
-
 ## Fitur
 
-- Responsive design (mobile-first)
-- Dark / Light mode toggle
+- 10 halaman HTML (beranda, tentang, layanan, kontak, portofolio, 5 divisi)
+- Dark/light mode toggle
 - Scroll animations (Intersection Observer)
 - WhatsApp floating button
-- SEO optimized (meta tags, Open Graph, sitemap.xml, robots.txt)
+- Contact form (Formspree)
+- WebP images dengan PNG fallback
+- SEO: OG tags, JSON-LD structured data, sitemap.xml, robots.txt
+- Breadcrumb navigation
+- Custom 404 page
+- Fully responsive (mobile-first)
+- Lazy loading images
 
-## Menjalankan Secara Lokal
+## Struktur
 
-```bash
-cd dsjb-company-profile
-python -m http.server 8080
+```
+├── index.html          # Beranda + Testimoni
+├── tentang.html        # Profil, Visi-Misi, Struktur Organisasi
+├── layanan.html        # 5 Divisi Layanan
+├── kontak.html         # Form Kontak + Info Kontak
+├── portofolio.html     # Portofolio (placeholder)
+├── divisi-*.html       # 5 Halaman Divisi Detail
+├── 404.html            # Custom 404
+├── sitemap.xml         # Sitemap
+├── robots.txt          # Robots
+└── assets/
+    ├── css/styles.css  # Main stylesheet
+    ├── js/main.js      # Main JS
+    └── img/            # Images (PNG + WebP)
 ```
 
-Buka browser → `http://localhost:8080`
+## Stack
 
-## Kontak
-
-- Email: dsitujayabersama@gmail.com
-- WhatsApp: +62 813-4841-4190
+- Pure HTML5 + CSS3 + Vanilla JavaScript
+- No framework, no build tools
+- GitHub Pages deployment

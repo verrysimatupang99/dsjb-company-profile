@@ -109,3 +109,66 @@ if (header) {
     }
   });
 }
+
+// Back to top button
+(function() {
+  const btn = document.createElement('button');
+  btn.className = 'back-to-top';
+  btn.setAttribute('aria-label', 'Kembali ke atas');
+  btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>';
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        btn.classList.toggle('visible', window.scrollY > 400);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.body.appendChild(btn);
+})();
+
+// Formspree contact form handler
+(function() {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+  
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = form.querySelector('.form-status');
+    const btn = form.querySelector('button[type="submit"]');
+    
+    btn.disabled = true;
+    btn.textContent = 'Mengirim...';
+    
+    try {
+      const data = new FormData(form);
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (res.ok) {
+        status.className = 'form-status success';
+        status.textContent = 'Pesan berhasil dikirim! Tim DSJB akan segera menghubungi Anda.';
+        form.reset();
+      } else {
+        throw new Error('Gagal mengirim');
+      }
+    } catch {
+      status.className = 'form-status error';
+      status.textContent = 'Gagal mengirim pesan. Silakan coba lagi atau hubungi via WhatsApp.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Kirim Pesan';
+    }
+  });
+})();
