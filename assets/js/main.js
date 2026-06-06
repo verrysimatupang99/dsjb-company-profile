@@ -14,6 +14,7 @@
     toggle.addEventListener("click", () => {
       const isOpen = nav.classList.toggle("open");
       toggle.setAttribute("aria-expanded", String(isOpen));
+      document.body.classList.toggle("nav-open", isOpen);
     });
 
     // Close nav on link click (mobile)
@@ -21,6 +22,7 @@
       link.addEventListener("click", () => {
         nav.classList.remove("open");
         toggle.setAttribute("aria-expanded", "false");
+        document.body.classList.remove("nav-open");
       });
     });
 
@@ -32,6 +34,7 @@
         if (window.innerWidth > 980) {
           nav.classList.remove("open");
           toggle.setAttribute("aria-expanded", "false");
+          document.body.classList.remove("nav-open");
         }
       }, 150);
     });
@@ -43,6 +46,7 @@
           !toggle.contains(e.target)) {
         nav.classList.remove("open");
         toggle.setAttribute("aria-expanded", "false");
+        document.body.classList.remove("nav-open");
       }
     });
 
@@ -51,6 +55,7 @@
       if (e.key === "Escape" && nav.classList.contains("open")) {
         nav.classList.remove("open");
         toggle.setAttribute("aria-expanded", "false");
+        document.body.classList.remove("nav-open");
         toggle.focus();
       }
     });

@@ -1,0 +1,14 @@
+{
+  "name": "dsjb-company-profile",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
+    "babel-jest": "^30.4.1",
+    "jest": "^29.7.0",
+    "jsdom": "^24.0.0"
+  }
+}
