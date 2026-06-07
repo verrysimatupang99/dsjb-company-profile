@@ -574,7 +574,7 @@
   // WhatsApp share
   document.getElementById("btnWhatsApp").addEventListener("click", () => {
     const d = getData();
-    const msg = [d.title, d.subtitle, "", d.body, "", "Hubungi: 0813-4841-4190", "Email: dsitujayabersama@gmail.com", "", "https://verrysimatupang99.github.io/dsjb-company-profile/"].join("\n");
+    const msg = [d.title, d.subtitle, "", d.body, "", "Hubungi: 0813-4841-4190", "Email: dsitujayabersama@gmail.com", "", "https://dsitujayabersama.com/"].join("\n");
     window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
   });
 

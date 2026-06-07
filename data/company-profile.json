@@ -1,0 +1,128 @@
+{
+  "site": {
+    "name": "PT DSITU JAYA BERSAMA",
+    "tagline": "The Right Partner, The Great Step.",
+    "baseUrl": "https://dsitujayabersama.com",
+    "analyticsDomain": "dsitujayabersama.com",
+    "logo": "assets/img/logo-dsjb-fullcolor-whitebg.webp",
+    "ogImage": "assets/img/cp-umum-logo-resmi.webp"
+  },
+  "contact": {
+    "whatsappNumber": "6281348414190",
+    "phoneDisplay": "0813-4841-4190",
+    "email": "dsitujayabersama@gmail.com",
+    "office": "Jln. Sampurna Indah, RT/RW 004/000, Desa Hidayah Makmur, Simpang Empat, Tanah Bumbu, Kalimantan Selatan"
+  },
+  "home": {
+    "hero": {
+      "backgroundImage": "assets/img/hero-cp-revisi.webp",
+      "eyebrow": "General Contractor & Integrated Plantation Services",
+      "title": "Partner strategis untuk kebutuhan agro, perkebunan, konstruksi pendukung, dan layanan operasional lapangan.",
+      "lead": "PT DSITU JAYA BERSAMA hadir sebagai perusahaan multi-layanan yang menyiapkan solusi terpadu untuk pengembangan perkebunan, rental alat berat, pupuk dan agro kimia, konstruksi bangunan pendukung, serta penangkaran bibit dan hortikultura.",
+      "primaryCta": {
+        "label": "Lihat Layanan",
+        "href": "layanan.html"
+      },
+      "secondaryCta": {
+        "label": "Hubungi Kami",
+        "href": "kontak.html"
+      },
+      "metrics": [
+        { "value": "5", "label": "Divisi layanan aktif" },
+        { "value": "1", "label": "Partner terintegrasi" },
+        { "value": "2026", "label": "Fondasi administrasi rapi" }
+      ]
+    },
+    "profile": {
+      "eyebrow": "Profil Singkat",
+      "title": "Membangun kepercayaan melalui layanan yang rapi, adaptif, dan berorientasi lapangan.",
+      "lead": "DSJB menggabungkan pemahaman sektor agro dengan dukungan konstruksi, peralatan, perdagangan kebutuhan produksi, dan pengelolaan bibit.",
+      "values": [
+        {
+          "title": "Terintegrasi",
+          "body": "Beberapa kebutuhan operasional perkebunan dapat dibaca dalam satu alur layanan, dari pengembangan kawasan sampai dukungan fasilitas lapangan."
+        },
+        {
+          "title": "Profesional",
+          "body": "Dokumen, komunikasi, dan penawaran disusun agar mudah ditindaklanjuti oleh direksi, mitra, dan pihak eksternal."
+        },
+        {
+          "title": "Berkelanjutan",
+          "body": "Arah layanan menempatkan produktivitas, kualitas, dan kesinambungan usaha sebagai nilai utama dalam setiap kerja sama."
+        }
+      ]
+    },
+    "services": {
+      "eyebrow": "Bidang Usaha",
+      "title": "Lima divisi layanan untuk kebutuhan perusahaan, perkebunan, dan mitra usaha.",
+      "items": [
+        {
+          "title": "Pengembangan Perkebunan",
+          "body": "Pengelolaan, survey kawasan, validasi lahan, dan pengembangan perkebunan berkelanjutan.",
+          "image": "assets/img/divisi-perkebunan.webp",
+          "alt": "Pengembangan perkebunan",
+          "href": "divisi-pengembangan-perkebunan.html"
+        },
+        {
+          "title": "Equipment & Rental",
+          "body": "Rental alat berat dengan atau tanpa operator, mobilisasi alat, dan dukungan pekerjaan lapangan.",
+          "image": "assets/img/divisi-equipment.webp",
+          "alt": "Equipment dan rental alat berat",
+          "href": "divisi-equipment-rental.html"
+        },
+        {
+          "title": "Pupuk & Agro Kimia",
+          "body": "Perdagangan pupuk, pestisida, dan produk agro kimia untuk mendukung produktivitas kebun.",
+          "image": "assets/img/divisi-pupuk.webp",
+          "alt": "Pupuk dan agro kimia",
+          "href": "divisi-pupuk-agrokimia.html"
+        },
+        {
+          "title": "Konstruksi Bangunan",
+          "body": "Mess, site office, gudang, workshop, fasilitas umum, dan pekerjaan pendukung lapangan.",
+          "image": "assets/img/divisi-konstruksi.webp",
+          "alt": "Konstruksi bangunan pendukung",
+          "href": "divisi-konstruksi-bangunan.html"
+        },
+        {
+          "title": "Penangkaran Bibit & Hortikultura",
+          "body": "Penangkaran bibit kelapa sawit dari kecambah, nursery, dan pengembangan hortikultura.",
+          "image": "assets/img/divisi-hortikultura.webp",
+          "alt": "Penangkaran bibit dan hortikultura",
+          "href": "divisi-penangkaran-hortikultura.html"
+        }
+      ]
+    },
+    "testimonials": {
+      "eyebrow": "Testimoni",
+      "title": "Apa kata mitra tentang layanan DSJB.",
+      "lead": "Umpan balik dari rekan kerja dan mitra yang telah bekerja sama dengan tim DSJB.",
+      "items": [
+        {
+          "quote": "Tim DSJB sangat profesional dalam mengkoordinasikan kebutuhan lapangan. Komunikasi lancar, dokumen rapi, dan pekerjaan selesai sesuai jadwal.",
+          "initials": "MR",
+          "name": "Mitra Perkebunan",
+          "location": "Kalimantan Selatan"
+        },
+        {
+          "quote": "Pengadaan pupuk dan agro kimia ditangani dengan baik. Penawaran jelas, harga kompetitif, dan pengiriman tepat waktu ke lokasi kebun.",
+          "initials": "PK",
+          "name": "Pengelola Kebun",
+          "location": "Tanah Bumbu"
+        },
+        {
+          "quote": "Pembangunan mess dan site office oleh divisi konstruksi DSJB berjalan rapi. Hasil sesuai spesifikasi dan koordinasi sangat mudah.",
+          "initials": "OP",
+          "name": "Operator Proyek",
+          "location": "Kalimantan"
+        }
+      ]
+    },
+    "cta": {
+      "title": "Siap berdiskusi untuk kebutuhan kerja sama dan pengembangan layanan.",
+      "lead": "Tim DSJB dapat dihubungi untuk pengenalan perusahaan, permintaan penawaran, dan pembahasan kebutuhan lapangan.",
+      "primaryLabel": "WhatsApp Bisnis",
+      "secondaryLabel": "Email Perusahaan"
+    }
+  }
+}

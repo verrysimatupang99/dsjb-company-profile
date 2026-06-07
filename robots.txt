@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://verrysimatupang99.github.io/dsjb-company-profile/sitemap.xml
+Sitemap: https://dsitujayabersama.com/sitemap.xml

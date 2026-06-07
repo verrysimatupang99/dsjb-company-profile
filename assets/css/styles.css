@@ -1501,3 +1501,37 @@ p { margin: 0 0 var(--space-sm); }
   width: 100%;
   height: 100%;
 }
+
+.video-placeholder {
+  display: grid;
+  place-items: center;
+  height: auto;
+  min-height: 320px;
+  padding: var(--space-lg);
+  background:
+    linear-gradient(135deg, rgba(47, 143, 70, .18), rgba(20, 93, 160, .18)),
+    url("../img/cp-umum-logo-resmi.webp") center/contain no-repeat;
+}
+
+.video-placeholder::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 19, 28, .82);
+}
+
+.video-placeholder > div {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  text-align: center;
+}
+
+.video-placeholder h3 {
+  margin: 0 0 10px;
+  font-size: clamp(1.3rem, 2vw, 1.9rem);
+}
+
+.video-placeholder p {
+  color: #dce6e5;
+}

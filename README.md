@@ -2,7 +2,7 @@
 
 Website company profile PT DSITU JAYA BERSAMA, perusahaan general contractor dan integrated plantation services di Kalimantan Selatan.
 
-**Live:** https://verrysimatupang99.github.io/dsjb-company-profile/
+**Live:** https://dsitujayabersama.com/
 
 ## Fitur
 

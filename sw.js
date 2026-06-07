@@ -1,16 +1,19 @@
-/* PT DSITU JAYA BERSAMA — Service Worker v1.0 */
-const CACHE_NAME = "dsjb-v1";
-const OFFLINE_URL = "/dsjb-company-profile/404.html";
+/* PT DSITU JAYA BERSAMA - Service Worker v2.0 */
+const CACHE_NAME = "dsjb-v2";
+const OFFLINE_URL = "/404.html";
 
 // Assets to pre-cache on install
 const PRECACHE = [
-  "/dsjb-company-profile/",
-  "/dsjb-company-profile/index.html",
-  "/dsjb-company-profile/assets/css/styles.css",
-  "/dsjb-company-profile/assets/js/main.js",
-  "/dsjb-company-profile/assets/img/logo-dsjb-fullcolor-whitebg.webp",
-  "/dsjb-company-profile/assets/img/hero-cp-revisi.webp",
-  "/dsjb-company-profile/manifest.json",
+  "/",
+  "/index.html",
+  "/404.html",
+  "/manifest.json",
+  "/data/company-profile.json",
+  "/assets/css/styles.css",
+  "/assets/js/main.js",
+  "/assets/js/content-loader.js",
+  "/assets/img/logo-dsjb-fullcolor-whitebg.webp",
+  "/assets/img/hero-cp-revisi.webp",
 ];
 
 // Install — pre-cache critical assets
