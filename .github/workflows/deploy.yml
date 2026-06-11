@@ -26,7 +26,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check FTP secrets present
+        id: ftp
+        run: |
+          if [ -n "${{ secrets.FTP_SERVER }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::FTP secrets belum diisi — deploy ke Spaceship dilewati. Isi FTP_SERVER/USERNAME/PASSWORD/REMOTE_DIR untuk mengaktifkan."
+          fi
+
       - name: Deploy via FTP
+        if: steps.ftp.outputs.ready == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
