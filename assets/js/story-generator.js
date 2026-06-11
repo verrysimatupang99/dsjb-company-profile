@@ -234,7 +234,7 @@
     const t = THEMES[th];
     const items = [
       ["0813-4841-4190", "TELP / WA"],
-      ["dsitujayabersama@gmail.com", "EMAIL"],
+      ["admin@dsitujayabersama.com", "EMAIL"],
       ["Tanah Bumbu, Kalimantan Selatan", "LOKASI"],
     ];
     const fs = Math.round(l.W * 0.019);
@@ -574,7 +574,7 @@
   // WhatsApp share
   document.getElementById("btnWhatsApp").addEventListener("click", () => {
     const d = getData();
-    const msg = [d.title, d.subtitle, "", d.body, "", "Hubungi: 0813-4841-4190", "Email: dsitujayabersama@gmail.com", "", "https://dsitujayabersama.com/"].join("\n");
+    const msg = [d.title, d.subtitle, "", d.body, "", "Hubungi: 0813-4841-4190", "Email: admin@dsitujayabersama.com", "", "https://dsitujayabersama.com/"].join("\n");
     window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
   });
 
