@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin Konten DSJB</title>
+  <link rel="icon" href="../assets/img/favicon.ico">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <style>
+    body.admin-page { min-height: 100vh; background: var(--navy-950); color: var(--text); }
+    .admin-shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 56px; }
+    .admin-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+    .admin-brand { display: flex; align-items: center; gap: 12px; }
+    .admin-brand img { width: 44px; height: 44px; border-radius: 14px; background: #fff; padding: 5px; }
+    .admin-brand h1 { margin: 0; font-size: clamp(1.45rem, 4vw, 2.2rem); }
+    .admin-brand p { margin: 3px 0 0; color: var(--muted); }
+    .admin-grid { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 18px; align-items: start; }
+    .admin-card { border: 1px solid var(--line); border-radius: 24px; background: var(--navy-900); box-shadow: var(--shadow); padding: 20px; }
+    .admin-card h2, .admin-card h3 { margin-top: 0; }
+    .admin-card p { color: var(--muted); }
+    .admin-nav { display: grid; gap: 8px; }
+    .admin-tab { border: 1px solid transparent; border-radius: 16px; background: transparent; color: var(--text); cursor: pointer; padding: 12px 14px; text-align: left; font-weight: 700; transition: .2s ease; }
+    .admin-tab:hover, .admin-tab.active { border-color: var(--line); background: color-mix(in srgb, var(--navy-800) 70%, transparent); transform: translateX(2px); }
+    .admin-form { display: grid; gap: 18px; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .admin-field { display: grid; gap: 7px; }
+    .admin-field.full { grid-column: 1 / -1; }
+    .admin-field label { font-weight: 800; font-size: .9rem; color: var(--text); }
+    .admin-field input, .admin-field textarea, .admin-field select { width: 100%; border: 1px solid var(--line); border-radius: 14px; background: color-mix(in srgb, var(--navy-800) 70%, transparent); color: var(--text); padding: 12px 13px; font: inherit; }
+    .admin-field textarea { min-height: 116px; resize: vertical; }
+    .repeat-list { display: grid; gap: 12px; }
+    .repeat-item { border: 1px dashed var(--line); border-radius: 18px; padding: 14px; background: rgba(255,255,255,.03); }
+    .admin-actions { display: flex; flex-wrap: wrap; gap: 10px; position: sticky; bottom: 16px; background: color-mix(in srgb, var(--navy-900) 88%, transparent); border: 1px solid var(--line); border-radius: 20px; padding: 12px; backdrop-filter: blur(16px); z-index: 3; }
+    .admin-status { min-height: 24px; color: var(--muted); font-weight: 700; }
+    .admin-status.ok { color: var(--green-400); }
+    .admin-status.error { color: #ff9b9b; }
+    .admin-preview { max-height: 420px; overflow: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; font-size: .78rem; line-height: 1.5; }
+    .admin-help { font-size: .86rem; color: var(--muted); }
+    .admin-help code { color: var(--green-400); }
+    .light-mode .admin-status.ok { color: var(--green-700); }
+    .light-mode .admin-status.error { color: #9d1c1c; }
+    @media (max-width: 860px) { .admin-grid, .field-grid { grid-template-columns: 1fr; } .admin-topbar { align-items: flex-start; flex-direction: column; } .admin-actions { position: static; } }
+  </style>
+</head>
+<body class="admin-page">
+  <main class="admin-shell">
+    <header class="admin-topbar">
+      <div class="admin-brand">
+        <img src="../assets/img/logo-dsjb-fullcolor-whitebg-192.png" alt="Logo DSJB">
+        <div>
+          <h1>Admin Konten DSJB</h1>
+          <p>Edit company profile tanpa coding. Publish = commit ke GitHub.</p>
+        </div>
+      </div>
+      <a class="btn btn-ghost" href="../index.html">Lihat Situs</a>
+    </header>
+
+    <section class="admin-grid">
+      <aside class="admin-card">
+        <h2>Panel</h2>
+        <p class="admin-help">Masukkan GitHub fine-grained token dengan akses repo <code>dsjb-company-profile</code>. Token disimpan hanya di browser ini.</p>
+        <div class="admin-field">
+          <label for="github-token">GitHub Token</label>
+          <input id="github-token" type="password" autocomplete="off" placeholder="github_pat_...">
+        </div>
+        <div class="admin-actions" style="position: static; margin: 12px 0 18px;">
+          <button class="btn btn-primary" data-action="load">Load dari GitHub</button>
+          <button class="btn btn-ghost" data-action="clear-token">Hapus Token</button>
+        </div>
+        <nav class="admin-nav" aria-label="Bagian konten">
+          <button class="admin-tab active" data-tab="site">Profil & Kontak</button>
+          <button class="admin-tab" data-tab="home">Hero Beranda</button>
+          <button class="admin-tab" data-tab="services">Layanan</button>
+          <button class="admin-tab" data-tab="testimonials">Testimoni</button>
+          <button class="admin-tab" data-tab="json">JSON Preview</button>
+        </nav>
+      </aside>
+
+      <section class="admin-card">
+        <form class="admin-form" id="admin-form">
+          <div id="editor-root"></div>
+          <div class="admin-actions">
+            <button class="btn btn-primary" type="button" data-action="save">Publish ke GitHub</button>
+            <button class="btn btn-ghost" type="button" data-action="download">Download JSON</button>
+            <button class="btn btn-ghost" type="button" data-action="reset">Reset dari file</button>
+            <span class="admin-status" id="admin-status" role="status"></span>
+          </div>
+        </form>
+      </section>
+    </section>
+  </main>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/admin/editor.js"></script>
+</body>
+</html>
