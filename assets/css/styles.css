@@ -52,6 +52,7 @@
   --fs-h3: clamp(1rem, 1.5vw, 1.12rem);
   --fs-body: clamp(.95rem, 1.2vw, 1.08rem);
   --fs-small: .82rem;
+  --hero-bg: url("../img/hero-cp-revisi.webp");
 }
 
 /* Light mode tokens */
@@ -251,7 +252,7 @@ p { margin: 0 0 var(--space-sm); }
   overflow: hidden;
   background-image:
     linear-gradient(90deg, rgba(6, 19, 28, .97) 0%, rgba(6, 19, 28, .84) 48%, rgba(6, 19, 28, .42) 100%),
-    url("../img/hero-cp-revisi.webp");
+    var(--hero-bg);
   background-size: cover;
   background-position: center;
 }
@@ -1076,8 +1077,29 @@ p { margin: 0 0 var(--space-sm); }
 }
 .light-mode .hero {
   background-image:
-    linear-gradient(90deg, rgba(255, 255, 255, .94) 0%, rgba(255, 255, 255, .82) 48%, rgba(255, 255, 255, .5) 100%),
-    url("../img/hero-cp-revisi.webp");
+    linear-gradient(90deg, rgba(248, 250, 249, .98) 0%, rgba(248, 250, 249, .9) 44%, rgba(248, 250, 249, .38) 68%, rgba(248, 250, 249, .08) 100%),
+    radial-gradient(circle at 78% 42%, rgba(47, 143, 70, .16), transparent 34%),
+    var(--hero-bg);
+  background-position: center right;
+}
+.light-mode .hero .btn-ghost {
+  border-color: rgba(16, 32, 43, .22);
+  color: var(--ink);
+  background: rgba(255, 255, 255, .38);
+}
+.light-mode .hero .btn-ghost:hover {
+  border-color: var(--green-700);
+  color: var(--green-700);
+  background: rgba(47, 143, 70, .08);
+}
+.light-mode .hero .metric {
+  border-top-color: var(--green-700);
+}
+.light-mode .hero .metric strong {
+  color: var(--ink);
+}
+.light-mode .hero .metric span {
+  color: #42534a;
 }
 .light-mode .hero h1,
 .light-mode .page-hero h1 { color: var(--ink); }
@@ -1085,7 +1107,11 @@ p { margin: 0 0 var(--space-sm); }
 .light-mode .page-hero .eyebrow { color: var(--green-700); }
 .light-mode .hero .lead,
 .light-mode .page-hero .lead { color: #3a4a42; }
-.light-mode .hero::after { background: linear-gradient(180deg, transparent, #fff); }
+.light-mode .hero h1,
+.light-mode .hero .lead {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .42);
+}
+.light-mode .hero::after { background: linear-gradient(180deg, transparent, rgba(255, 255, 255, .96)); }
 .light-mode .contact-hero {
   background-image:
     linear-gradient(90deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .8)),
@@ -1238,6 +1264,14 @@ p { margin: 0 0 var(--space-sm); }
 
   .hero {
     min-height: 70vh;
+  }
+
+  .light-mode .hero {
+    background-image:
+      linear-gradient(180deg, rgba(248, 250, 249, .99) 0%, rgba(248, 250, 249, .94) 54%, rgba(248, 250, 249, .76) 100%),
+      radial-gradient(circle at 70% 76%, rgba(47, 143, 70, .12), transparent 34%),
+      var(--hero-bg);
+    background-position: center bottom;
   }
 
   .section-title h2 {

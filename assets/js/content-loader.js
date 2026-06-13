@@ -66,10 +66,7 @@
     const hero = data.home?.hero || {};
     const heroNode = document.querySelector(".hero");
     if (heroNode && hero.backgroundImage) {
-      heroNode.style.backgroundImage = [
-        "linear-gradient(90deg, rgba(6, 19, 28, .97) 0%, rgba(6, 19, 28, .84) 48%, rgba(6, 19, 28, .42) 100%)",
-        `url("${hero.backgroundImage}")`
-      ].join(", ");
+      heroNode.style.setProperty("--hero-bg", `url("${hero.backgroundImage}")`);
     }
 
     const primary = document.querySelector("[data-home-primary]");
